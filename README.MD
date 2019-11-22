@@ -1,2 +1,20 @@
-## SUT REG APV V.2 
-#### using golang for service
+# SUT REG API V.2.
+[The first version here](https://github.com/moomdate/API-SUT-REG)
+## Using golang for service.
+
+### What's new.
+- Move from php to Golang.
+- Remove json file. use url filter instans of json file.
+- Do not update Json file.
+- Caching reg.sut.ac.th. able to use when can't access Reg Page.
+- Faster than before.
+- Easily updated.
+
+### How to use.
+ 
+#### `GET` http://exampledomain.com/api/:courseid/:acadyear/:semester
+`http://exampledomain.com/api/:courseid/:acadyear/:semester`
+#### PATH VARIABLES
+##### courseid = Course code such as `52310`
+##### acadyear = Acadmic Year in Buddhist year such as `2556` `2557`
+##### semester = Semester of course such as `1` `2` `3`
