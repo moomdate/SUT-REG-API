@@ -118,7 +118,6 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 			mc2 := make(map[string]courseEntity.Group)
 			if strings.ToUpper(el.Attr("bgcolor")) == headerGroups { // checking head of group
 				if shouldSumGroups(el.Text) { // sum sec time to group here
-					fmt.Println("len is :")
 					countInGroup++ // section time 2 3 4 ...
 					bigMC[gTemp].SecTime[strconv.Itoa(countInGroup)] = courseEntity.Group{
 						Day:      el.ChildText(getDay),
@@ -128,7 +127,6 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 					}
 				} else {
 					countInGroup = 0
-					fmt.Println("acc ->", el.ChildText(getDay))
 					gTemp = getGroupNumber(el.Text)
 					mc2["0"] = courseEntity.Group{ // main groups
 						Day:      el.ChildText(getDay),
