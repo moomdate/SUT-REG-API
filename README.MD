@@ -4,7 +4,7 @@
 
 ### What's new.
 - Move from php to Golang.
-- Remove json file. use url filter instans of json file.
+- Remove json file. use url filter instead of json file.
 - Do not update Json file.
 - Caching reg.sut.ac.th. able to use when can't access Reg Page.
 - Faster than before.
