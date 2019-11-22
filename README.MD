@@ -21,6 +21,6 @@
 
 #### Prepare to use
 - `get get github.com/gocolly/colly && go get github.com/gorilla/mux`
-## Defualt port is `8080`
+## Defualt port is `8000`
 #### Deployment
  - Whatever you'd like.
