@@ -20,7 +20,7 @@
 
 
 #### Prepare to use
-- `go get github.com/gocolly/colly && go get github.com/gorilla/mux`
+- `$ go get github.com/gocolly/colly && go get github.com/gorilla/mux`
 ## Defualt port is `8000`
 #### Deployment
  - Whatever you'd like.
