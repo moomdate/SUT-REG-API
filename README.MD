@@ -1,6 +1,5 @@
 # SUT REG API V.2.
 [The first version here](https://github.com/moomdate/API-SUT-REG)
-## Using golang for service.
 
 ### What's new.
 - Move from php to Golang.
