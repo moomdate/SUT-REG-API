@@ -18,3 +18,10 @@
 ##### courseid = Course code such as `52310`
 ##### acadyear = Acadmic Year in Buddhist year such as `2556` `2557`
 ##### semester = Semester of course such as `1` `2` `3`
+
+
+#### Prepare to use
+- `get get github.com/gocolly/colly && go get github.com/gorilla/mux`
+## Defualt port is `8080`
+#### Deployment
+ - Whatever you'd like.
