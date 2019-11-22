@@ -11,8 +11,8 @@
 
 ### How to use.
  
-#### `GET` http://exampledomain.com/api/:courseid/:acadyear/:semester
-`http://exampledomain.com/api/:courseid/:acadyear/:semester`
+#### `GET` http://moomdate.tech/api/:courseid/:acadyear/:semester
+`http://moomdate.tech/api/:courseid/:acadyear/:semester`
 #### PATH VARIABLES
 ##### courseid = Course code such as `52310`
 ##### acadyear = Acadmic Year in Buddhist year such as `2556` `2557`
