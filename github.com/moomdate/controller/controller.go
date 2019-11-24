@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/moomdate/courseEntity"
 )
@@ -26,12 +28,17 @@ const (
 	getTc         = "td:nth-child(5) > font:nth-child(1)"
 )
 
-type Courses courseEntity.CourseStruc // use struct
+//type Courses courseEntity.CourseStruc // use struct
 
 func InitServer() {
 	router := mux.NewRouter()
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
+
 	router.HandleFunc("/api/{id}/{year}/{semester}", scraping).Methods("GET")
-	http.ListenAndServe(":8000", router)
+
+	http.ListenAndServe(":8000", handlers.CORS(originsOk, headersOk, methodsOk)(router))
 }
 
 // check difference day of group
