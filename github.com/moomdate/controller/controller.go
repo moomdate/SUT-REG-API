@@ -55,9 +55,14 @@ func getGroupNumber(str string) string {
 	explodeAr := strings.Fields(str)
 	explodeStr := explodeAr[0]
 	if len(explodeStr) > 3 {
-		explodeStr = "00"
+		explodeStr = "0"
 	}
-	return explodeStr
+	realn, err := strconv.Atoi(explodeStr)
+	if err != nil { // need to remove zero subtract the number
+		fmt.Println("it error ", err)
+	}
+	arlOut := strconv.Itoa(realn)
+	return arlOut
 }
 func digCourseCode(ID string, Year string, sem string) string {
 	var link string
@@ -65,7 +70,7 @@ func digCourseCode(ID string, Year string, sem string) string {
 	if len(ID) < 1 {
 		return ""
 	}
-	mainLink := "http://reg4.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
+	mainLink := "http://reg3.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
 	scrapLink := colly.NewCollector(
 		colly.CacheDir("./reg_cacheCourse"),
 	)
@@ -96,6 +101,7 @@ func subCourse(inputStr string) string {
 			break
 		}
 	}
+	//fmt.Println("course id", out)
 	return out
 }
 func scraping(w http.ResponseWriter, r *http.Request) {
@@ -109,9 +115,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	pSemis := getParam["semester"]
 	tempCID := pID
 	pID = digCourseCode(pID, pYear, pSemis)
-	fmt.Println("pID is ", pID)
-	baseURL := fmt.Sprintf("http://reg4.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
-	fmt.Println("base url is ", baseURL)
+	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
 
 	bigMC := make(map[string]*courseEntity.GroupBig)
 	c := colly.NewCollector(
