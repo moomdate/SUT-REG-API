@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gocolly/colly"
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/moomdate/courseEntity"
 )
@@ -32,13 +30,10 @@ const (
 
 func InitServer() {
 	router := mux.NewRouter()
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With"})
-	originsOk := handlers.AllowedOrigins([]string{os.Getenv("ORIGIN_ALLOWED")})
-	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
 	router.HandleFunc("/api/{id}/{year}/{semester}", scraping).Methods("GET")
 
-	http.ListenAndServe(":8000", handlers.CORS(originsOk, headersOk, methodsOk)(router))
+	http.ListenAndServe(":8000", (router))
 }
 
 // check difference day of group
@@ -150,6 +145,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 					bigMC[gTemp] = &courseEntity.GroupBig{
 						SecTime: mc2,
 					}
+					bigMC[gTemp].Group = gTemp
 				}
 			}
 			if el.ChildText(checkTc) == "อาจารย์:" { // อาจารย์
