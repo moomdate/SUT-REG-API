@@ -11,6 +11,7 @@ import (
 	"github.com/gocolly/colly"
 	"github.com/gorilla/mux"
 	"github.com/moomdate/courseEntity"
+	"github.com/rs/cors"
 )
 
 const (
@@ -32,8 +33,14 @@ func InitServer() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api/{id}/{year}/{semester}", scraping).Methods("GET")
-
-	http.ListenAndServe(":8000", (router))
+	mcors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
+	})
+	handler := mcors.Handler(router)
+	http.ListenAndServe(":8000", (handler))
 }
 
 // check difference day of group
