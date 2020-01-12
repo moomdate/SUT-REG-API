@@ -8,23 +8,23 @@ import (
 	"strings"
 	"time"
 
+	"../courseEntity"
 	"github.com/gocolly/colly"
 	"github.com/gorilla/mux"
-	"github.com/moomdate/courseEntity"
 	"github.com/rs/cors"
 )
 
-const (
+const ( //child access
 	headerGroups  = "#F5F5F5"
 	acTable       = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
 	getCourseName = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
 	getCredit     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
-	getDay        = "td:nth-child(4)"
-	getTime       = "td:nth-child(5)"
-	getRoom       = "td:nth-child(6) "
-	getBuilding   = "td:nth-child(7)"
-	checkTc       = "td:nth-child(4) > font:nth-child(1)"
-	getTc         = "td:nth-child(5) > font:nth-child(1)"
+	getDay        = "td:nth-child(4)" //get Date
+	getTime       = "td:nth-child(5)" //get Time
+	getRoom       = "td:nth-child(6) " //get room
+	getBuilding   = "td:nth-child(7)" //get building
+	checkTc       = "td:nth-child(4) > font:nth-child(1)" //check teacher
+	getTc         = "td:nth-child(5) > font:nth-child(1)" //get teacher
 )
 
 //type Courses courseEntity.CourseStruc // use struct

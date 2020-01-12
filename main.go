@@ -1,10 +1,7 @@
 package main
 
-import (
-	"github.com/moomdate/controller"
-)
+import "./controller"
 
 func main() {
 	controller.InitServer()
-
 }
