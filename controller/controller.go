@@ -1,19 +1,19 @@
 package controller
 
 import (
+	"../courseModel"
 	"encoding/json"
 	"fmt"
+	"github.com/gocolly/colly"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
-
-	"../courseEntity"
-	"github.com/gocolly/colly"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 )
 
+const port  =  8080
 const ( //child access
 	headerGroups  = "#F5F5F5"
 	acTable       = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
@@ -40,7 +40,8 @@ func InitServer() {
 		Debug: true,
 	})
 	handler := mcors.Handler(router)
-	http.ListenAndServe(":8000", (handler))
+	fmt.Print("server port:",port)
+	http.ListenAndServe(":8080"  , (handler))
 }
 
 // check difference day of group
@@ -107,7 +108,7 @@ func subCourse(inputStr string) string {
 	return out
 }
 func scraping(w http.ResponseWriter, r *http.Request) {
-	var Course courseEntity.CourseStruc
+	var Course courseModel.CourseStruc
 	var courseName, credit string
 	var gTemp string
 	countInGroup := 0
@@ -119,7 +120,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	pID = digCourseCode(pID, pYear, pSemis)
 	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
 
-	bigMC := make(map[string]*courseEntity.GroupBig)
+	bigMC := make(map[string]*courseModel.GroupBig)
 	c := colly.NewCollector(
 		colly.DetectCharset(),
 		colly.CacheDir("./reg_cache"),
@@ -128,11 +129,11 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 		courseName = cc.ChildText(getCourseName)
 		credit = cc.ChildText(getCredit)
 		cc.ForEach(" table:nth-child(5) > tbody:nth-child(1) tr", func(_ int, el *colly.HTMLElement) {
-			mc2 := make(map[string]courseEntity.Group)
+			mc2 := make(map[string]courseModel.Group)
 			if strings.ToUpper(el.Attr("bgcolor")) == headerGroups { // checking head of group
 				if shouldSumGroups(el.Text) { // sum sec time to group here
 					countInGroup++ // section time 2 3 4 ...
-					bigMC[gTemp].SecTime[strconv.Itoa(countInGroup)] = courseEntity.Group{
+					bigMC[gTemp].SecTime[strconv.Itoa(countInGroup)] = courseModel.Group{
 						Day:      el.ChildText(getDay),
 						Time:     el.ChildText(getTime),
 						Room:     el.ChildText(getRoom),
@@ -141,7 +142,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 				} else {
 					countInGroup = 0
 					gTemp = getGroupNumber(el.Text)
-					mc2["0"] = courseEntity.Group{ // main groups
+					mc2["0"] = courseModel.Group{ // main groups
 						Day:      el.ChildText(getDay),
 						Time:     el.ChildText(getTime),
 						Room:     el.ChildText(getRoom),
@@ -149,7 +150,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 					}
 					countInGroup = 0
 
-					bigMC[gTemp] = &courseEntity.GroupBig{
+					bigMC[gTemp] = &courseModel.GroupBig{
 						SecTime: mc2,
 					}
 					bigMC[gTemp].Group = gTemp
@@ -166,7 +167,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 			}
 
 		}) //end loop
-		Course = courseEntity.CourseStruc{
+		Course = courseModel.CourseStruc{
 			Name:   courseName,
 			ID:     tempCID,
 			Credit: credit,

@@ -1,4 +1,4 @@
-package courseEntity
+package courseModel
 
 type CourseStruc struct {
 	Name   string `json:"Name"`
@@ -23,10 +23,4 @@ type Group struct {
 	Time     string `json:Time`
 	Room     string `json:Room`
 	Building string `json:Building`
-}
-type Ga struct {
-}
-
-func HelloWorld() string {
-	return "hello wolrd"
 }
