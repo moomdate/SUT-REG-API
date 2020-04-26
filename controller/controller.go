@@ -41,7 +41,7 @@ func InitServer() {
 	})
 	handler := mcors.Handler(router)
 	fmt.Print("server port:",port)
-	http.ListenAndServe(":8080"  , (handler))
+	http.ListenAndServe(":8081"  , (handler))
 }
 
 // check difference day of group
