@@ -10,17 +10,17 @@ type CourseStruc struct {
 //defualt is Groups []GroupDetail
 type GroupBig struct {
 	SecTime map[string]Group
-	Group   string `json:group`
+	Group   string `json:"group"`
 	Teacher string `json:"Teacher"`
-	Mid     string `json:Mid`
-	Final   string `json:Final`
-	Note    string `json:Note`
+	Mid     string `json:"Mid"`
+	Final   string `json:"Final"`
+	Note    string `json:"Note"`
 }
 
 // should change to day eiei
 type Group struct {
-	Day      string `json:Day`
-	Time     string `json:Time`
-	Room     string `json:Room`
-	Building string `json:Building`
+	Day      string `json:"Day"`
+	Time     string `json:"Time"`
+	Room     string `json:"Room"`
+	Building string `json:"Building"`
 }

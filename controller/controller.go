@@ -1,28 +1,29 @@
 package controller
 
 import (
-	"../courseModel"
 	"encoding/json"
 	"fmt"
-	"github.com/gocolly/colly"
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"../courseModel"
+	"github.com/gocolly/colly"
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
-const port  =  8080
+const port = 8081
 const ( //child access
 	headerGroups  = "#F5F5F5"
 	acTable       = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
 	getCourseName = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
 	getCredit     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
-	getDay        = "td:nth-child(4)" //get Date
-	getTime       = "td:nth-child(5)" //get Time
-	getRoom       = "td:nth-child(6) " //get room
-	getBuilding   = "td:nth-child(7)" //get building
+	getDay        = "td:nth-child(4)"                     //get Date
+	getTime       = "td:nth-child(5)"                     //get Time
+	getRoom       = "td:nth-child(6) "                    //get room
+	getBuilding   = "td:nth-child(7)"                     //get building
 	checkTc       = "td:nth-child(4) > font:nth-child(1)" //check teacher
 	getTc         = "td:nth-child(5) > font:nth-child(1)" //get teacher
 )
@@ -36,12 +37,12 @@ func InitServer() {
 	mcors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
-		// Enable Debugging for testing, consider disabling in production
+		// Enable Debugging for testing, consider disabling in producti
 		Debug: true,
 	})
 	handler := mcors.Handler(router)
-	fmt.Print("server port:",port)
-	http.ListenAndServe(":8081"  , (handler))
+	fmt.Print("server port:", port)
+	http.ListenAndServe(":8081", (handler))
 }
 
 // check difference day of group
