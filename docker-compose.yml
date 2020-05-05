@@ -2,6 +2,9 @@ version: '3.7'
 services:
   api:
     #image: reg-api:latest
+    volumes:
+      - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
+      - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
     build:
       context: .
       args:

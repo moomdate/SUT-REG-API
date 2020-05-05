@@ -76,7 +76,7 @@ func digCourseCode(ID string, Year string, sem string) string {
 	}
 	mainLink := "http://reg3.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
 	scrapLink := colly.NewCollector(
-		colly.CacheDir("./reg_cacheCourse"),
+		colly.CacheDir("./reg_cache/digCode"),
 	)
 	scrapLink.SetRequestTimeout(5 * time.Second)
 	scrapLink.OnHTML("a[href]", func(el *colly.HTMLElement) {
@@ -124,7 +124,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	bigMC := make(map[string]*courseModel.GroupBig)
 	c := colly.NewCollector(
 		colly.DetectCharset(),
-		colly.CacheDir("./reg_cache"),
+		colly.CacheDir("./reg_cache/course"),
 	)
 	c.OnHTML(acTable, func(cc *colly.HTMLElement) {
 		courseName = cc.ChildText(getCourseName)
