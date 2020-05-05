@@ -19,8 +19,11 @@ RUN go build .
 CMD if [ ${APP_ENV} = production ]; \
     then \
     ./reg-api; \
+    ["flask", "run"]\
     else \
+    go run main.go \
+    ["flask", "run"] \
     fresh; \
-    fi
+    fi 
 
 EXPOSE 8081
