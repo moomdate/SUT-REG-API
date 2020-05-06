@@ -16,18 +16,23 @@ import (
 
 const port = 8081
 const ( //child access
-	headerGroups  = "#F5F5F5"
-	acTable       = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
-	getCourseName = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
-	getCredit     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
-	getDay        = "td:nth-child(4)"                     //get Date
-	getTime       = "td:nth-child(5)"                     //get Time
-	getRoom       = "td:nth-child(6) "                    //get room
-	getBuilding   = "td:nth-child(7)"                     //get building
-	checkTc       = "td:nth-child(4) > font:nth-child(1)" //check teacher
-	getTc         = "td:nth-child(5) > font:nth-child(1)" //get teacher
+	headerGroups    = "#F5F5F5"
+	acTable         = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
+	getStatus       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3) > font:nth-child(1)"
+	getCourseNameEn = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
+	getCourseNameTh = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) > font:nth-child(1)"
+	getBelongTo     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(3) > font:nth-child(1)	"
+	getCredit       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
+	getDay          = "td:nth-child(4)"                     //get Date
+	getTime         = "td:nth-child(5)"                     //get Time
+	getRoom         = "td:nth-child(6) "                    //get room
+	getBuilding     = "td:nth-child(7)"                     //get building
+	checkTc         = "td:nth-child(4) > font:nth-child(1)" //check teacher
+	getTc           = "td:nth-child(5) > font:nth-child(1)" //get teacher
+	getOpenAmount 		= "td:nth-child(9)"
+	getReserveAmount 	= "td:nth-child(10)"
+	getRemainAmount 	= "td:nth-child(11)"
 )
-
 //type Courses courseEntity.CourseStruc // use struct
 
 func InitServer() {
@@ -76,7 +81,7 @@ func digCourseCode(ID string, Year string, sem string) string {
 	}
 	mainLink := "http://reg3.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
 	scrapLink := colly.NewCollector(
-		colly.CacheDir("./reg_cache/digCode"),
+	colly.CacheDir("./reg_cache/digCode"),
 	)
 	scrapLink.SetRequestTimeout(5 * time.Second)
 	scrapLink.OnHTML("a[href]", func(el *colly.HTMLElement) {
@@ -108,11 +113,21 @@ func subCourse(inputStr string) string {
 	//fmt.Println("course id", out)
 	return out
 }
+type Amount struct{
+	open int
+	reserve int
+	remaining int
+}
 func scraping(w http.ResponseWriter, r *http.Request) {
 	var Course courseModel.CourseStruc
-	var courseName, credit string
-	var gTemp string
-	countInGroup := 0
+	var Group []courseModel.Group
+
+	var courseNameEn, courseNameTh, belongTo, status, credit string
+	var sectionTimeTemp []courseModel.SectionTime
+	var gTemp int
+	var tempDetail courseModel.Group
+	//countInGroup := 0
+	var amount Amount;
 	getParam := mux.Vars(r)
 	pID := getParam["id"]
 	pYear := getParam["year"]
@@ -120,59 +135,98 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	tempCID := pID
 	pID = digCourseCode(pID, pYear, pSemis)
 	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
+	fmt.Println(baseURL)
+	//var secTime []*courseModel.SectionTime;
 
-	bigMC := make(map[string]*courseModel.GroupBig)
+	//bigMC := make([]*courseModel.Group, 100)
+
 	c := colly.NewCollector(
 		colly.DetectCharset(),
 		colly.CacheDir("./reg_cache/course"),
 	)
+
 	c.OnHTML(acTable, func(cc *colly.HTMLElement) {
-		courseName = cc.ChildText(getCourseName)
+		courseNameEn = cc.ChildText(getCourseNameEn)
+		courseNameTh = cc.ChildText(getCourseNameTh)
+		belongTo = cc.ChildText(getBelongTo)
+		status = cc.ChildText(getStatus)
+		fmt.Println("----------- course name en", courseNameEn)
+		fmt.Println("----------- course name th", courseNameTh)
 		credit = cc.ChildText(getCredit)
+
 		cc.ForEach(" table:nth-child(5) > tbody:nth-child(1) tr", func(_ int, el *colly.HTMLElement) {
-			mc2 := make(map[string]courseModel.Group)
+			// mc2 := make(map[string]courseModel.Group)
 			if strings.ToUpper(el.Attr("bgcolor")) == headerGroups { // checking head of group
 				if shouldSumGroups(el.Text) { // sum sec time to group here
-					countInGroup++ // section time 2 3 4 ...
-					bigMC[gTemp].SecTime[strconv.Itoa(countInGroup)] = courseModel.Group{
+					sectionTimeTemp = append(sectionTimeTemp, courseModel.SectionTime{
 						Day:      el.ChildText(getDay),
 						Time:     el.ChildText(getTime),
 						Room:     el.ChildText(getRoom),
 						Building: el.ChildText(getBuilding),
-					}
-				} else {
-					countInGroup = 0
-					gTemp = getGroupNumber(el.Text)
-					mc2["0"] = courseModel.Group{ // main groups
-						Day:      el.ChildText(getDay),
-						Time:     el.ChildText(getTime),
-						Room:     el.ChildText(getRoom),
-						Building: el.ChildText(getBuilding),
-					}
-					countInGroup = 0
+					})
+					fmt.Printf("groups t:%d \r\n", gTemp)
 
-					bigMC[gTemp] = &courseModel.GroupBig{
-						SecTime: mc2,
+				} else {
+					gTemp, _ = strconv.Atoi(getGroupNumber(el.Text))
+					sectionTimeTemp = append(sectionTimeTemp, courseModel.SectionTime{
+						Day:      el.ChildText(getDay),
+						Time:     el.ChildText(getTime),
+						Room:     el.ChildText(getRoom),
+						Building: el.ChildText(getBuilding),
+					})
+					if len(el.ChildText(getOpenAmount))>0{
+						amount.open,_= strconv.Atoi(el.ChildText(getOpenAmount))
 					}
-					bigMC[gTemp].Group = gTemp
+					if len(el.ChildText(getReserveAmount))>0 {
+						amount.reserve,_= strconv.Atoi(el.ChildText(getReserveAmount))
+					}
+					if len(el.ChildText(getRemainAmount))>0 {
+						amount.remaining,_= strconv.Atoi(el.ChildText(getRemainAmount))
+					}
+
+					fmt.Printf("groups b:%d \r\n", gTemp)
 				}
 			}
+			if el.Attr("align") == "left" { // line hr in html tag
+				// push group hear
+				fmt.Println("====================== ,", gTemp)
+				fmt.Printf("%+v\n", sectionTimeTemp)
+				//fmt.Println(tempDetail)
+				Group = append(Group, courseModel.Group{
+					SecTime: sectionTimeTemp,
+					Group:   gTemp,
+					Teacher: tempDetail.Teacher,
+					Final:   tempDetail.Final,
+					Mid:     tempDetail.Mid,
+					Note:    tempDetail.Note,
+					Open: amount.open,
+					Reserved:amount.reserve,
+					Remaining:amount.remaining,
+				})
+				sectionTimeTemp = []courseModel.SectionTime{}
+				tempDetail = courseModel.Group{}
+				amount = Amount{}
+			}
 			if el.ChildText(checkTc) == "อาจารย์:" { // อาจารย์
-				bigMC[gTemp].Teacher = el.ChildText(getTc)
+				tempDetail.Teacher = el.ChildText(getTc)
 			} else if el.ChildText(checkTc) == "สอบกลางภาค:" { //mid
-				bigMC[gTemp].Mid = el.ChildText(getTc)
+				tempDetail.Mid = el.ChildText(getTc)
 			} else if el.ChildText(checkTc) == "สอบประจำภาค:" { //fi
-				bigMC[gTemp].Final = el.ChildText(getTc)
+				tempDetail.Final = el.ChildText(getTc)
 			} else if el.ChildText(checkTc) == "หมายเหตุ:" { //fi
-				bigMC[gTemp].Note = el.ChildText(getTc)
+				tempDetail.Note = el.ChildText(getTc)
 			}
 
 		}) //end loop
+
 		Course = courseModel.CourseStruc{
-			Name:   courseName,
-			ID:     tempCID,
-			Credit: credit,
-			Groups: bigMC,
+			NameEn:   courseNameEn,
+			NameTh:   courseNameTh,
+			BelongTo: belongTo,
+			Status:   status,
+			ID:       tempCID,
+			Credit:   credit,
+			Groups:   Group,
 		}
 	})
 	c.OnRequest(func(r *colly.Request) {

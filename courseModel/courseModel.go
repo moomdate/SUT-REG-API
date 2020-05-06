@@ -1,26 +1,32 @@
 package courseModel
 
 type CourseStruc struct {
-	Name   string `json:"Name"`
-	ID     string `json:"courseID"`
-	Credit string `json:"Credit"`
-	Groups map[string]*GroupBig
+	NameEn    string  `json:"nameEn"`
+	NameTh    string  `json:"nameTh"`
+	BelongTo  string  `json:"belongTo"`
+	Status    string  `json:"status"`
+	ID        string  `json:"courseID"`
+	Credit    string  `json:"credit"`
+	Groups    []Group `json:"groups"`
 }
 
 //defualt is Groups []GroupDetail
-type GroupBig struct {
-	SecTime map[string]Group
-	Group   string `json:"group"`
-	Teacher string `json:"Teacher"`
-	Mid     string `json:"Mid"`
-	Final   string `json:"Final"`
-	Note    string `json:"Note"`
+type Group struct {
+	SecTime []SectionTime `json:"sectionTime"`
+	Group   int           `json:"group"`
+	Open      int     `json:"openAmount"`
+	Reserved  int     `json:"reservedAmount"`
+	Remaining int     `json:"remainingAmount"`
+	Teacher string        `json:"teacher"`
+	Mid     string        `json:"mid"`
+	Final   string        `json:"final"`
+	Note    string        `json:"note"`
 }
 
 // should change to day eiei
-type Group struct {
-	Day      string `json:"Day"`
-	Time     string `json:"Time"`
-	Room     string `json:"Room"`
-	Building string `json:"Building"`
+type SectionTime struct {
+	Day      string `json:"day"`
+	Time     string `json:"time"`
+	Room     string `json:"room"`
+	Building string `json:"building"`
 }
