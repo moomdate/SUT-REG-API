@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,29 +17,32 @@ import (
 
 const port = 8081
 const ( //child access
-	headerGroups    = "#F5F5F5"
-	acTable         = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
-	getStatus       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3) > font:nth-child(1)"
-	getCourseNameEn = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
-	getCourseNameTh = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) > font:nth-child(1)"
-	getBelongTo     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(3) > font:nth-child(1)	"
-	getCredit       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
-	getDay          = "td:nth-child(4)"                     //get Date
-	getTime         = "td:nth-child(5)"                     //get Time
-	getRoom         = "td:nth-child(6) "                    //get room
-	getBuilding     = "td:nth-child(7)"                     //get building
-	checkTc         = "td:nth-child(4) > font:nth-child(1)" //check teacher
-	getTc           = "td:nth-child(5) > font:nth-child(1)" //get teacher
-	getOpenAmount 		= "td:nth-child(9)"
-	getReserveAmount 	= "td:nth-child(10)"
-	getRemainAmount 	= "td:nth-child(11)"
+	headerGroups     = "#F5F5F5"
+	acTable          = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
+	getStatus        = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3) > font:nth-child(1)"
+	getCourseNameEn  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
+	getCourseNameTh  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) > font:nth-child(1)"
+	getBelongTo      = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(3) > font:nth-child(1)	"
+	getCredit        = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
+	getDay           = "td:nth-child(4)"                     //get Date
+	getTime          = "td:nth-child(5)"                     //get Time
+	getRoom          = "td:nth-child(6) "                    //get room
+	getBuilding      = "td:nth-child(7)"                     //get building
+	checkTc          = "td:nth-child(4) > font:nth-child(1)" //check teacher
+	getTc            = "td:nth-child(5) > font:nth-child(1)" //get teacher
+	getOpenAmount    = "td:nth-child(9)"
+	getReserveAmount = "td:nth-child(10)"
+	getRemainAmount  = "td:nth-child(11)"
 )
+
 //type Courses courseEntity.CourseStruc // use struct
 
 func InitServer() {
 	router := mux.NewRouter()
 
+	router.HandleFunc("/major/{id}", courseMajor).Methods("GET")
 	router.HandleFunc("/api/{id}/{year}/{semester}", scraping).Methods("GET")
+
 	mcors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
@@ -81,7 +85,7 @@ func digCourseCode(ID string, Year string, sem string) string {
 	}
 	mainLink := "http://reg3.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
 	scrapLink := colly.NewCollector(
-	colly.CacheDir("./reg_cache/digCode"),
+		colly.CacheDir("./reg_cache/digCode"),
 	)
 	scrapLink.SetRequestTimeout(5 * time.Second)
 	scrapLink.OnHTML("a[href]", func(el *colly.HTMLElement) {
@@ -113,11 +117,73 @@ func subCourse(inputStr string) string {
 	//fmt.Println("course id", out)
 	return out
 }
-type Amount struct{
-	open int
-	reserve int
+
+type Amount struct {
+	open      int
+	reserve   int
 	remaining int
 }
+
+func splitCourseName(text string) (string, string) {
+	thaiIndex := 0
+	for i, r := range text {
+		if r > 3500 {
+			//fmt.Println(i, r, string(r))
+			thaiIndex = i
+			break
+		}
+	}
+	nameEn := text[0:thaiIndex]
+	nameTh := text[thaiIndex:len(text)]
+	return nameEn, nameTh
+}
+func courseMajor(w http.ResponseWriter, r *http.Request) {
+	getParam := mux.Vars(r)
+	id := getParam["id"]
+	var majorCourseList = []courseModel.MajorCourse{}
+	var courseTemp = courseModel.MajorCourse{}
+	mainLink := "http://reg4.sut.ac.th/registrar/program_info_1.asp?programid=" + id
+	scrapLink := colly.NewCollector(
+		colly.CacheDir("./reg_cache/majorCourse"),
+	)
+	scrapLink.SetRequestTimeout(5 * time.Second)
+	scrapLink.OnHTML("body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > table:nth-child(4) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table", func(el *colly.HTMLElement) {
+		el.ForEach("tbody", func(_ int, eltr *colly.HTMLElement) {
+			eltr.ForEach("tr", func(_ int, elFont *colly.HTMLElement) {
+
+				if elFont.Attr("bgcolor") == "#FFFFDE" {
+					elFont.ForEach("td > font", func(_ int, elFontEl *colly.HTMLElement) {
+						if len(elFontEl.Text) == 10 {
+
+							tempText := strings.Split(elFontEl.Text, " ")
+							tempCourseIn, err := strconv.Atoi(tempText[0])
+							if err != nil {
+								log.Fatal("get course id err")
+							}
+							courseTemp.CourseId = tempCourseIn
+						} else if len(elFontEl.Text) == 9 {
+							courseTemp.Credit = elFontEl.Text
+							majorCourseList = append(majorCourseList, courseTemp)
+							courseTemp = courseModel.MajorCourse{}
+
+						} else {
+							nameEn, nameTh := splitCourseName(elFontEl.Text)
+							courseTemp.CourseNameEn = nameEn
+							courseTemp.CourseNameTh = nameTh
+						}
+					})
+				}
+			})
+		})
+	})
+	scrapLink.OnRequest(func(r *colly.Request) {
+		r.ResponseCharacterEncoding = "charset=UTF-8"
+	})
+	scrapLink.Visit(mainLink)
+	w.Header().Set("Content-type", "application/json; charset=UTF-8;")
+	json.NewEncoder(w).Encode(majorCourseList)
+}
+
 func scraping(w http.ResponseWriter, r *http.Request) {
 	var Course courseModel.CourseStruc
 	var Group []courseModel.Group
@@ -127,7 +193,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	var gTemp int
 	var tempDetail courseModel.Group
 	//countInGroup := 0
-	var amount Amount;
+	var amount Amount
 	getParam := mux.Vars(r)
 	pID := getParam["id"]
 	pYear := getParam["year"]
@@ -174,14 +240,14 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 						Room:     el.ChildText(getRoom),
 						Building: el.ChildText(getBuilding),
 					})
-					if len(el.ChildText(getOpenAmount))>0{
-						amount.open,_= strconv.Atoi(el.ChildText(getOpenAmount))
+					if len(el.ChildText(getOpenAmount)) > 0 {
+						amount.open, _ = strconv.Atoi(el.ChildText(getOpenAmount))
 					}
-					if len(el.ChildText(getReserveAmount))>0 {
-						amount.reserve,_= strconv.Atoi(el.ChildText(getReserveAmount))
+					if len(el.ChildText(getReserveAmount)) > 0 {
+						amount.reserve, _ = strconv.Atoi(el.ChildText(getReserveAmount))
 					}
-					if len(el.ChildText(getRemainAmount))>0 {
-						amount.remaining,_= strconv.Atoi(el.ChildText(getRemainAmount))
+					if len(el.ChildText(getRemainAmount)) > 0 {
+						amount.remaining, _ = strconv.Atoi(el.ChildText(getRemainAmount))
 					}
 
 					fmt.Printf("groups b:%d \r\n", gTemp)
@@ -193,15 +259,15 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 				fmt.Printf("%+v\n", sectionTimeTemp)
 				//fmt.Println(tempDetail)
 				Group = append(Group, courseModel.Group{
-					SecTime: sectionTimeTemp,
-					Group:   gTemp,
-					Teacher: tempDetail.Teacher,
-					Final:   tempDetail.Final,
-					Mid:     tempDetail.Mid,
-					Note:    tempDetail.Note,
-					Open: amount.open,
-					Reserved:amount.reserve,
-					Remaining:amount.remaining,
+					SecTime:   sectionTimeTemp,
+					Group:     gTemp,
+					Teacher:   tempDetail.Teacher,
+					Final:     tempDetail.Final,
+					Mid:       tempDetail.Mid,
+					Note:      tempDetail.Note,
+					Open:      amount.open,
+					Reserved:  amount.reserve,
+					Remaining: amount.remaining,
 				})
 				sectionTimeTemp = []courseModel.SectionTime{}
 				tempDetail = courseModel.Group{}
