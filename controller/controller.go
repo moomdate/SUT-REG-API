@@ -133,7 +133,12 @@ func splitCourseName(text string) (string, string) {
 			break
 		}
 	}
-	nameEn := text[0:thaiIndex]
+	firstIndex :=0
+	if text[0]==194{ // remove double space
+		firstIndex = 2
+	}
+
+	nameEn := text[firstIndex : thaiIndex-2] // remove double space
 	nameTh := text[thaiIndex:len(text)]
 	return nameEn, nameTh
 }
