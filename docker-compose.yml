@@ -5,6 +5,7 @@ services:
     volumes:
       - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
       - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
+      - ./reg_cache/majorCourse:/src/moomdate/reg-api/reg_cache/majorCourse
     build:
       context: .
       args:

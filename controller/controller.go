@@ -141,7 +141,7 @@ func splitCourseName(text string) (string, string) {
 	if text[0] == 194 { // remove double space
 		firstIndex = 2
 	}
-
+	//fmt.Println("errr------------>",text,firstIndex,thaiIndex-2)
 	nameEn := text[firstIndex : thaiIndex-2] // remove double space
 	nameTh := text[thaiIndex:len(text)]
 	return nameEn, nameTh
@@ -215,6 +215,8 @@ func courseMajor(w http.ResponseWriter, r *http.Request) {
 	id := getParam["id"]
 	var majorCourseList = []courseModel.MajorCourse{}
 	var courseTemp = courseModel.MajorCourse{}
+	 state := "courseId"// ready
+
 	mainLink := baseURLCourseInMajor + id
 	scrapLink := colly.NewCollector(
 		colly.CacheDir("./reg_cache/majorCourse"),
@@ -225,24 +227,28 @@ func courseMajor(w http.ResponseWriter, r *http.Request) {
 			eltr.ForEach("tr", func(_ int, elFont *colly.HTMLElement) {
 
 				if elFont.Attr("bgcolor") == "#FFFFDE" {
-					elFont.ForEach("td > font", func(_ int, elFontEl *colly.HTMLElement) {
-						if len(elFontEl.Text) == 10 {
+					elFont.ForEach("td", func(_ int, elFontEl *colly.HTMLElement) {
 
-							tempText := strings.Split(elFontEl.Text, " ")
+						if elFontEl.Attr("valign")=="TOP" && state == "courseId" {
+							log.Println("[courseOfMajor] CourseId :",elFontEl.ChildText("font"))
+							tempText := strings.Split(elFontEl.ChildText("font"), " ")
 							tempCourseIn, err := strconv.Atoi(tempText[0])
 							if err != nil {
 								log.Fatal("get course id err")
 							}
 							courseTemp.CourseId = tempCourseIn
-						} else if len(elFontEl.Text) == 9 {
-							courseTemp.Credit = elFontEl.Text
+						} else if elFontEl.Attr("valign")=="TOP" && state == "credit" {
+							log.Println("[courseOfMajor] Credit :",elFontEl.ChildText("font"))
+							courseTemp.Credit = elFontEl.ChildText("font")
 							majorCourseList = append(majorCourseList, courseTemp)
 							courseTemp = courseModel.MajorCourse{}
-
-						} else {
-							nameEn, nameTh := splitCourseName(elFontEl.Text)
+							state="courseId"
+						} else if elFontEl.Attr("valign")=="CENTER"{
+							nameEn, nameTh := splitCourseName(elFontEl.ChildText("font"))
+							log.Println("[courseOfMajor] Course name:",nameEn,nameTh)
 							courseTemp.CourseNameEn = nameEn
 							courseTemp.CourseNameTh = nameTh
+							state = "credit"
 						}
 					})
 				}
@@ -275,6 +281,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	pID = digCourseCode(pID, pYear, pSemis)
 	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
 	fmt.Println(baseURL)
+	log.Println("request URL: ",baseURL)
 	//var secTime []*courseModel.SectionTime;
 
 	//bigMC := make([]*courseModel.Group, 100)
