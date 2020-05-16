@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"reg-api/courseModel"
 	"strconv"
 	"strings"
 	"time"
 
-	"../courseModel"
 	"github.com/gocolly/colly"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -33,6 +33,8 @@ const ( //child access
 	getOpenAmount    = "td:nth-child(9)"
 	getReserveAmount = "td:nth-child(10)"
 	getRemainAmount  = "td:nth-child(11)"
+	Baseroot         = "body > table > tbody > tr:nth-child(1) > td:nth-child(3) > font > b > div > table > tbody > tr > td > table > tbody > tr > td > font > table > tbody > tr > td > table > tbody"
+	TermDetail       = "body > table > tbody > tr:nth-child(1) > td:nth-child(3) > table:nth-child(3) > tbody > tr:nth-child(7) > td:nth-child(2) > font > font"
 )
 const baseURLCourseInMajor = "http://reg4.sut.ac.th/registrar/program_info_1.asp?programid="
 
@@ -40,10 +42,9 @@ const baseURLCourseInMajor = "http://reg4.sut.ac.th/registrar/program_info_1.asp
 
 func InitServer() {
 	router := mux.NewRouter()
-
-	router.HandleFunc("/major/{id}", courseMajor).Methods("GET")
-
-	router.HandleFunc("/major/list/{id}", getMajor).Methods("GET")
+	router.HandleFunc("/api/course/major/{id}", courseMajor).Methods("GET")
+	router.HandleFunc("/api/major/list/{id}", getMajor).Methods("GET")
+	router.HandleFunc("/api/import/{stdid}/{acadyear}/{semester}", importFormReg).Methods("GET")
 	router.HandleFunc("/api/{id}/{year}/{semester}", scraping).Methods("GET")
 
 	mcors := cors.New(cors.Options{
@@ -157,12 +158,74 @@ func getNumber(strNumber string) int {
 	}
 	return result
 }
+
+func importFormReg(w http.ResponseWriter, r *http.Request) {
+	getParam := mux.Vars(r)
+	stdid := getParam["stdid"]
+	acadyears := getParam["acadyear"]
+	semesters := getParam["semester"]
+	if strings.ToUpper(stdid[0:1]) == "B" {
+		stdid = "1" + stdid[1:]
+	} else if strings.ToUpper(stdid[0:1]) == "M" {
+		stdid = "2" + stdid[1:]
+	} else {
+		stdid = "3" + stdid[1:]
+	}
+	URL := "http://reg5.sut.ac.th/registrar/learn_time.asp?f_cmd=2&studentid=" + stdid + "&acadyear=" + acadyears + "&maxsemester=3&rnd=43673.6771527778&firstday=22/7/2562&semester=" + semesters
+	c := colly.NewCollector()
+	var cid, gid, cname, ver string
+
+	var Data []courseModel.CourseDetail
+	c.OnHTML("body > table > tbody > tr:nth-child(1) > td:nth-child(3) > font > b > div > table > tbody > tr > td > table > tbody > tr > td > font > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr", func(e *colly.HTMLElement) {
+		if e.Index != 0 {
+			e.ForEach("td", func(_ int, el *colly.HTMLElement) {
+				if el.Index == 0 {
+					cid = strings.TrimSpace(el.Text)
+					datacid := strings.Split(cid, "-")
+					cid = datacid[0]
+					ver = datacid[1]
+				}
+				if el.Index == 1 {
+					for i := 0; i < len(el.Text); i++ {
+						if int(el.Text[i]) > 160 {
+							s := strings.Split(el.Text, string([]rune(el.Text)[i]))
+							cname = s[0]
+							break
+						}
+					}
+				}
+				if el.Index == 2 {
+					gid = el.Text
+				}
+			})
+			courseD := courseModel.CourseDetail{
+				Name:     cname,
+				Group:    gid,
+				CourseID: cid,
+				Version:  ver,
+			}
+			Data = append(Data, courseD)
+		}
+	})
+	c.OnRequest(func(r *colly.Request) {
+		r.ResponseCharacterEncoding = "charset=utf-8"
+	})
+
+	c.Visit(URL)
+	couses := &courseModel.Course{
+		Acadyear: acadyears,
+		Semester: semesters,
+		Data:     Data,
+	}
+	w.Header().Set("Content-type", "application/json; charset=UTF-8;")
+	json.NewEncoder(w).Encode(couses)
+}
 func getMajor(w http.ResponseWriter, r *http.Request) {
 	getParam := mux.Vars(r)
 	id := getParam["id"]
 	//mainLink := "test"
 	scrapLink := colly.NewCollector(
-		colly.CacheDir("./reg_cache/majorCourse"),
+		colly.CacheDir("./reg_cache/majorList"),
 	)
 	scrapLink.OnResponse(func(r *colly.Response) {
 
@@ -215,7 +278,7 @@ func courseMajor(w http.ResponseWriter, r *http.Request) {
 	id := getParam["id"]
 	var majorCourseList = []courseModel.MajorCourse{}
 	var courseTemp = courseModel.MajorCourse{}
-	 state := "courseId"// ready
+	state := "courseId" // ready
 
 	mainLink := baseURLCourseInMajor + id
 	scrapLink := colly.NewCollector(
@@ -229,23 +292,23 @@ func courseMajor(w http.ResponseWriter, r *http.Request) {
 				if elFont.Attr("bgcolor") == "#FFFFDE" {
 					elFont.ForEach("td", func(_ int, elFontEl *colly.HTMLElement) {
 
-						if elFontEl.Attr("valign")=="TOP" && state == "courseId" {
-							log.Println("[courseOfMajor] CourseId :",elFontEl.ChildText("font"))
+						if elFontEl.Attr("valign") == "TOP" && state == "courseId" {
+							log.Println("[courseOfMajor] CourseId :", elFontEl.ChildText("font"))
 							tempText := strings.Split(elFontEl.ChildText("font"), " ")
 							tempCourseIn, err := strconv.Atoi(tempText[0])
 							if err != nil {
 								log.Fatal("get course id err")
 							}
 							courseTemp.CourseId = tempCourseIn
-						} else if elFontEl.Attr("valign")=="TOP" && state == "credit" {
-							log.Println("[courseOfMajor] Credit :",elFontEl.ChildText("font"))
+						} else if elFontEl.Attr("valign") == "TOP" && state == "credit" {
+							log.Println("[courseOfMajor] Credit :", elFontEl.ChildText("font"))
 							courseTemp.Credit = elFontEl.ChildText("font")
 							majorCourseList = append(majorCourseList, courseTemp)
 							courseTemp = courseModel.MajorCourse{}
-							state="courseId"
-						} else if elFontEl.Attr("valign")=="CENTER"{
+							state = "courseId"
+						} else if elFontEl.Attr("valign") == "CENTER" {
 							nameEn, nameTh := splitCourseName(elFontEl.ChildText("font"))
-							log.Println("[courseOfMajor] Course name:",nameEn,nameTh)
+							log.Println("[courseOfMajor] Course name:", nameEn, nameTh)
 							courseTemp.CourseNameEn = nameEn
 							courseTemp.CourseNameTh = nameTh
 							state = "credit"
@@ -262,8 +325,48 @@ func courseMajor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/json; charset=UTF-8;")
 	json.NewEncoder(w).Encode(majorCourseList)
 }
+func getDateFormCourse(text string) {
+	seeDash := 0
+	if len(text) > 0 {
+		for i, r := range text {
+			//fmt.Println("--->",i, r, string(r))
+			if string(r) == "-" {
+				seeDash = i
+				break
+			}
+		}
+		dateTimeStr := text[0 : seeDash+7] // 6 ก.ย. 2562 เวลา 12:00 - 14:00
+		seeDash = 0
+		textTemp := text
+		patternLen := len(dateTimeStr)
+		for i := 0; i >= 0; i++ {
+			position := strings.Index(textTemp, dateTimeStr) // หา index ของ word match
+			if len(textTemp) <= patternLen {
+				break
+			}
+			textScope := text[0:patternLen] // 0, length
 
+			fmt.Println("text scope->", textScope)
+
+			textOriLen := len(textTemp)
+			//cutAt := len(textScope)
+			fmt.Println("text org->", textTemp)
+			textTemp = textTemp[patternLen+1 : textOriLen]
+			position = strings.Index(textTemp, dateTimeStr)
+			Building := textTemp[0:position]
+			fmt.Println("new text->", Building)
+
+			fmt.Println("new position:", position)
+			fmt.Println("xxxxxx--", textTemp[0:position])
+		}
+		fmt.Printf("=============================================")
+	}
+	//fmt.Println(text)
+}
 func scraping(w http.ResponseWriter, r *http.Request) {
+	host := r.Host
+	log.Println("host Requeter:", host)
+
 	var Course courseModel.CourseStruc
 	var Group []courseModel.Group
 
@@ -281,7 +384,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 	pID = digCourseCode(pID, pYear, pSemis)
 	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", pID, pYear, pSemis)
 	fmt.Println(baseURL)
-	log.Println("request URL: ",baseURL)
+	log.Println("request URL: ", baseURL)
 	//var secTime []*courseModel.SectionTime;
 
 	//bigMC := make([]*courseModel.Group, 100)
@@ -356,6 +459,7 @@ func scraping(w http.ResponseWriter, r *http.Request) {
 			if el.ChildText(checkTc) == "อาจารย์:" { // อาจารย์
 				tempDetail.Teacher = el.ChildText(getTc)
 			} else if el.ChildText(checkTc) == "สอบกลางภาค:" { //mid
+				//getDateFormCoursegetDateFormCourse(el.ChildText(getTc))
 				tempDetail.Mid = el.ChildText(getTc)
 			} else if el.ChildText(checkTc) == "สอบประจำภาค:" { //fi
 				tempDetail.Final = el.ChildText(getTc)

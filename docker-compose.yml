@@ -6,6 +6,7 @@ services:
       - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
       - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
       - ./reg_cache/majorCourse:/src/moomdate/reg-api/reg_cache/majorCourse
+      - ./reg_cache/majorList:/src/moomdate/reg-api/reg_cache/majorList
     build:
       context: .
       args:

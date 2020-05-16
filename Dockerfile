@@ -1,4 +1,4 @@
-FROM golang:alpine AS build-env
+FROM golang:1.13-alpine3.10 AS build-env
 
 ARG app_env
 ENV APP_ENV $app_env
@@ -6,13 +6,13 @@ ENV APP_ENV $app_env
 RUN mkdir -p /src/moomdate/reg-api
 WORKDIR /src/moomdate/reg-api
 COPY . .
-RUN apk add git
+RUN go get ./
+
 
 #RUN go build /go/src/github.com/moomdate/reg-api/main.go
 # RUN go get github.com/gocolly/colly
 # RUN go get github.com/gorilla/mux
 # RUN go get github.com/rs/cors
-RUN go get -d -v
 
 RUN go build .
 

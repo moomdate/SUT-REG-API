@@ -30,3 +30,14 @@ type SectionTime struct {
 	Room     string `json:"room"`
 	Building string `json:"building"`
 }
+type Course struct {
+	Acadyear string         `json:"acadyear"`
+	Semester string         `json:"semester"`
+	Data     []CourseDetail `json:"courses"`
+}
+type CourseDetail struct {
+	Name     string `json:"name"`
+	Group    string `json:"group"`
+	CourseID string `json:"courseID"`
+	Version  string `json:"version"`
+}
