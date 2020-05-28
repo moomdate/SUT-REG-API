@@ -2,9 +2,9 @@ pipeline {
    agent any
 
    stages {
-      stage('Hello') {
+      stage('pull code') {
          steps {
-            echo 'Hello World'
+            git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
          }
       }
    }
