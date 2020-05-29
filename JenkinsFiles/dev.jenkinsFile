@@ -8,7 +8,7 @@ pipeline {
    stages {
       stage('Pull code') {
          steps {
-            git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
+            git branch: 'master',credentialsId: 'jenkins',url: 'git@github.com:moomdate/SUT-REG-API.git'
          }
       }
       stage('Build container image') {
