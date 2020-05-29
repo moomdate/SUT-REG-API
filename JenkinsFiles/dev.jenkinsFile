@@ -11,6 +11,9 @@ pipeline {
             git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
          }
       }
+      stage('Build container image') {
+         sh 'whoami'
+      }
       stage('Build') {
          steps {
             sh 'docker build -t reg-api:${input_version} .'
