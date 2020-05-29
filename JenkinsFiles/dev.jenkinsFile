@@ -12,7 +12,9 @@ pipeline {
          }
       }
       stage('Build container image') {
-         sh 'whoami'
+         steps{
+             sh 'whoami'
+         }
       }
       stage('Build') {
          steps {
