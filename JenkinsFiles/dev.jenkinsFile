@@ -2,9 +2,14 @@ pipeline {
    agent any
 
    stages {
-      stage('pull code') {
+      stage('Pull code') {
          steps {
             git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
+         }
+      }
+      stage('Build') {
+         steps {
+            sh 'docker build -t reg-api:${input_version} .'
          }
       }
    }
