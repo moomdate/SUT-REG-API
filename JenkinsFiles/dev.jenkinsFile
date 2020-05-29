@@ -1,6 +1,10 @@
 pipeline {
    agent any
 
+   environment {
+        BRANCH_NAME = 'master'
+        input_version = '1.0.0'
+   }
    stages {
       stage('Pull code') {
          steps {
