@@ -21,7 +21,14 @@ pipeline {
       stage('Push image & clear image ') {
         steps {
             sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
-            sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
+            // sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
+         }
+      }
+      stage('Refresh service') {
+        steps {
+           sh 'docker-compose up -d'
+            // sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
+            // sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
          }
       }
    }
