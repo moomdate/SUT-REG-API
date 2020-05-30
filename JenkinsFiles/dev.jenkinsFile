@@ -18,7 +18,7 @@ pipeline {
       }
       stage('Build') {
          steps {
-            sh 'docker build -t reg-api:${input_version} .'
+            docker.build -t reg-api:${input_version} .
          }
       }
    }
