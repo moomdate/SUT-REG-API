@@ -2,8 +2,10 @@ pipeline {
    agent any
 
    environment {
-        BRANCH_NAME = 'master'
-        input_version = '1.0.0'
+      BRANCH_NAME = 'master'
+      input_version = '1.0.0'
+      registry = "docker_hub_account/repository_name"
+      registryCredential = 'dockerhub'
    }
    stages {
       stage('Pull code') {
@@ -18,7 +20,7 @@ pipeline {
       }
       stage('Build') {
          steps {
-            docker.build -t reg-api:${input_version} .
+            docker.build registry + ":$BUILD_NUMBER"
          }
       }
    }
