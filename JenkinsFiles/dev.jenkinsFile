@@ -14,14 +14,14 @@ pipeline {
          }
       }
       stage('Build container image') {
-         steps{
-             sh 'whoami'
+         steps {
+            sh 'docker build -t registry.gitlab.com/schedule/reg-api:${input_version} .'
          }
       }
-      stage('view dir and build') {
-         steps {
-            sh 'ls'
-            sh 'docker build .'
+      stage('Push image & clear image') {
+        steps {
+            sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
+            sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
          }
       }
    }
