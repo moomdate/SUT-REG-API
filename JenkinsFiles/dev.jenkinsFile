@@ -8,7 +8,7 @@ pipeline {
       registryCredential = 'dockerhub'
    }
    stages {
-      stage('Pull code') {
+      stage('Pull code ') {
          steps { 
             git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
          }
