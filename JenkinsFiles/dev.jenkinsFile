@@ -21,8 +21,6 @@ pipeline {
       stage('view dir and build') {
          steps {
             sh 'ls'
-         }
-          steps {
             sh 'docker build .'
          }
       }
