@@ -26,7 +26,7 @@ pipeline {
     }
       stage('Remote to node') {
         steps {
-           sh "ssh -t -t root@159.89.205.51  \' whoami"
+           sh "ssh -t -t root@159.89.205.51  \' whoami && docker images \."
          }
       }
      
