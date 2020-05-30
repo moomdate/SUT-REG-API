@@ -9,7 +9,7 @@ pipeline {
    }
    stages {
       stage('Pull code') {
-         steps {
+         steps { 
             git branch: 'master',credentialsId: 'github.com',url: 'git@github.com:moomdate/SUT-REG-API.git'
          }
       }
