@@ -33,6 +33,7 @@ pipeline {
       stage('Run Service') {
         steps {
            sh 'docker-compose up -d'
+         }
       }
    }
 }
