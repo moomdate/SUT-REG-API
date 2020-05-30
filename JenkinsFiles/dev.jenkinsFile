@@ -21,15 +21,18 @@ pipeline {
       stage('Push image & clear image ') {
         steps {
             sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
-            // sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
+            sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
          }
       }
-      stage('Refresh service') {
+      stage('Remote to node') {
+        steps {
+           sh 'ssh root@159.89.205.51'
+           sh 'docker pull registry.gitlab.com/schedule/reg-api:${input_version}'
+         }
+      }
+      stage('Run Service') {
         steps {
            sh 'docker-compose up -d'
-            // sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
-            // sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
-         }
       }
    }
 }
