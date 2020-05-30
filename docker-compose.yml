@@ -2,6 +2,7 @@ version: '3.7'
 services:
   api:
     #image: reg-api:latest
+    container_name: reg-api
     volumes:
       - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
       - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
@@ -11,8 +12,7 @@ services:
       context: .
       args:
         app_env: production
-
+    network_mode: 'bridge'
     image: reg-api
-    ports:
-      - '8081:8081'
-    #sudo docker run -d -i -t -p 8081:8081 c586
+    # ports:
+    #   - '8081:8081'
