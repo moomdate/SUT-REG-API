@@ -23,10 +23,10 @@ pipeline {
             sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
             sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
          }
-      }
+    }
       stage('Remote to node') {
         steps {
-           sh 'ssh -o StrictHostKeyChecking=no root@159.89.205.51'
+           sh 'ssh -t -t root@159.89.205.51'
            sh 'docker pull registry.gitlab.com/schedule/reg-api:${input_version}'
          }
       }
