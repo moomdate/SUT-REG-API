@@ -12,7 +12,14 @@ services:
       context: .
       args:
         app_env: production
-    network_mode: 'bridge'
+    #network_mode: 'bridge'
     image: reg-api
-    # ports:
-    #   - '8081:8081'
+
+    networks:
+      static-network:
+        ipv4_address: 172.20.128.3
+networks:
+  static-network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
