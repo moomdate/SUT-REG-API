@@ -18,7 +18,7 @@ pipeline {
             sh 'docker build -t registry.gitlab.com/schedule/reg-api:${input_version} .'
          }
       }
-      stage('Push image & clear image') {
+      stage('Push image & clear image ') {
         steps {
             sh 'docker push registry.gitlab.com/schedule/reg-api:${input_version}'
             sh 'docker rmi registry.gitlab.com/schedule/reg-api:${input_version}'
