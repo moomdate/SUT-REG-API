@@ -26,14 +26,9 @@ pipeline {
     }
       stage('Remote to node') {
         steps {
-           sh 'ssh -t -t root@159.89.205.51'
-           sh 'docker pull registry.gitlab.com/schedule/reg-api:${input_version}'
+           sh "ssh -t -t root@159.89.205.51  \' whoami"
          }
       }
-      stage('Run Service') {
-        steps {
-           sh 'docker-compose up -d'
-         }
-      }
+     
    }
 }
