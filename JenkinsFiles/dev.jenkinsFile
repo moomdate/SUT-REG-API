@@ -18,9 +18,12 @@ pipeline {
              sh 'whoami'
          }
       }
-      stage('Build') {
+      stage('view dir and build') {
          steps {
-            docker.build registry + ":$BUILD_NUMBER"
+            sh 'ls'
+         }
+          steps {
+            sh 'docker build .'
          }
       }
    }
