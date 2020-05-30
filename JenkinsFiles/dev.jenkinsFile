@@ -26,7 +26,7 @@ pipeline {
       }
       stage('Remote to node') {
         steps {
-           sh 'ssh root@159.89.205.51'
+           sh 'ssh -o StrictHostKeyChecking=no root@159.89.205.51'
            sh 'docker pull registry.gitlab.com/schedule/reg-api:${input_version}'
          }
       }
