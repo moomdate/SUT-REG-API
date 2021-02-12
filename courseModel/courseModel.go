@@ -1,26 +1,28 @@
 package courseModel
 
 type CourseStruc struct {
-	NameEn    string  `json:"nameEn"`
-	NameTh    string  `json:"nameTh"`
-	BelongTo  string  `json:"belongTo"`
-	Status    string  `json:"status"`
-	ID        string  `json:"courseID"`
-	Credit    string  `json:"credit"`
-	Groups    []Group `json:"groups"`
+	NameEn      string  `json:"nameEn"`
+	NameTh      string  `json:"nameTh"`
+	BelongTo    string  `json:"belongTo"`
+	Status      string  `json:"status"`
+	ID          string  `json:"courseID"`
+	Credit      string  `json:"credit"`
+	Version     int     `json:"version"`
+	Description string  `json:"description"`
+	Groups      []Group `json:"groups"`
 }
 
-//defualt is Groups []GroupDetail
+// default is Groups []GroupDetail
 type Group struct {
-	SecTime []SectionTime `json:"sectionTime"`
-	Group   int           `json:"group"`
-	Open      int     `json:"openAmount"`
-	Reserved  int     `json:"reservedAmount"`
-	Remaining int     `json:"remainingAmount"`
-	Teacher string        `json:"teacher"`
-	Mid     string        `json:"mid"`
-	Final   string        `json:"final"`
-	Note    string        `json:"note"`
+	SecTime   []SectionTime `json:"sectionTime"`
+	Group     int           `json:"group"`
+	Open      int           `json:"openAmount"`
+	Reserved  int           `json:"reservedAmount"`
+	Remaining int           `json:"remainingAmount"`
+	Teacher   string        `json:"teacher"`
+	Mid       string        `json:"mid"`
+	Final     string        `json:"final"`
+	Note      string        `json:"note"`
 }
 
 // should change to day eiei
@@ -40,4 +42,9 @@ type CourseDetail struct {
 	Group    string `json:"group"`
 	CourseID string `json:"courseID"`
 	Version  string `json:"version"`
+}
+type CourseVersion struct {
+	CourseID string `json:"courseID"`
+	Version  string `json:"version"`
+	AliasID  string `json:"aliasID"`
 }
