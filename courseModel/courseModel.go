@@ -7,8 +7,9 @@ type CourseStruc struct {
 	Status      string  `json:"status"`
 	ID          string  `json:"courseID"`
 	Credit      string  `json:"credit"`
-	Version     int     `json:"version"`
 	Description string  `json:"description"`
+	Year        int     `json:"year""`
+	Semester    int     `json:"semester"`
 	Groups      []Group `json:"groups"`
 }
 

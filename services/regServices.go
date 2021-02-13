@@ -28,6 +28,7 @@ const ( //child access
 	getBuilding      = "td:nth-child(7)"                     //get building
 	checkTc          = "td:nth-child(4) > font:nth-child(1)" //check teacher
 	getTc            = "td:nth-child(5) > font:nth-child(1)" //get teacher
+	getYearSemester  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(8) > td:nth-child(2) > font:nth-child(3)"
 	getCourseId      = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > b:nth-child(1) > font:nth-child(1)"
 	getDescription   = "table:nth-child(6) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > font:nth-child(3)"
 	getCourseList    = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > font:nth-child(5) > font:nth-child(2) > font:nth-child(2) > font:nth-child(3) > div:nth-child(3) > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > font:nth-child(1) > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr"
@@ -436,8 +437,10 @@ func subDescription(text string) string {
 	return split[0]
 }
 func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
-	host := r.Host
-	log.Println("host Requeter:", host)
+	getParam := mux.Vars(r)
+	pID := getParam["id"]
+	pYear := getParam["year"]
+	pSemis := getParam["semester"]
 
 	var Course courseModel.CourseStruc
 	var Group []courseModel.Group
@@ -446,12 +449,10 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 	var sectionTimeTemp []courseModel.SectionTime
 	var gTemp int
 	var tempDetail courseModel.Group
-	//countInGroup := 0
 	var amount Amount
-	getParam := mux.Vars(r)
-	pID := getParam["id"]
-	pYear := getParam["year"]
-	pSemis := getParam["semester"]
+	year, _ := strconv.Atoi(pYear)
+	semester, _ := strconv.Atoi(pSemis)
+
 	var tempCID string
 	newPId := digCourseCode(pID, pYear, pSemis)
 
@@ -474,6 +475,7 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 		status = cc.ChildText(getStatus)
 		tempCID = cc.ChildText(getCourseId)
 		description = subDescription(cc.ChildText(getDescription))
+
 		fmt.Println("----------- course name en", courseNameEn)
 		fmt.Println("----------- course name th", courseNameTh)
 		fmt.Println("----------- course name th", description)
@@ -554,6 +556,8 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 			Credit:      credit,
 			Description: description,
 			Groups:      Group,
+			Year: year,
+			Semester: semester,
 		}
 	})
 	c.OnRequest(func(r *colly.Request) {
