@@ -11,12 +11,12 @@ RUN go get ./
 
 RUN go build .
 
-CMD if [ ${BUILD_TYPE} = prod ]; \
-    then \
-    ./reg-api; \
-    else \
-    go run main.go; \
-    fresh; \
-    fi 
-
+#CMD if [ ${BUILD_TYPE} = prod ]; \
+#    then \
+#    ./reg-api; \
+#    else \
+#    go run main.go; \
+#    fresh; \
+#    fi
+CMD ./reg-api
 EXPOSE 8081

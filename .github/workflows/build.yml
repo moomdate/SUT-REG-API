@@ -29,4 +29,4 @@ jobs:
           push: true
           build-args: |
             build_type=${{ github.event.inputs.build_type }}
-          tags: docker.pkg.github.com/moomdate/SUT-REG-API/reg-api:${{ github.event.inputs.version }}
+          tags: docker.pkg.github.com/moomdate/sut-reg-api/reg-api:${{ github.event.inputs.version }}
