@@ -1,0 +1,32 @@
+name: Build image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version
+        default: 1.0.0
+        required: true
+      build_type:
+        description: test or prod
+        default: test
+        required: true
+
+jobs:
+  step-build-image:
+    name: build image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Docker Login
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DEPLOY_TOKEN }}
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v2.2.2
+        with:
+          push: true
+          build-args: |
+            build_type=${{ github.event.inputs.build_type }}
+          tags: docker.pkg.github.com/moomdate/SUT-REG-API/reg-api:${{ github.event.inputs.version }}

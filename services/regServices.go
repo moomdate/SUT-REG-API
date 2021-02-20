@@ -77,15 +77,10 @@ func FindCourseAll(w http.ResponseWriter, r *http.Request) {
 	semesters := getParam["semester"]
 	fmt.Print(" =====", cid+" "+acadyears+" - "+semesters)
 	scrapLink := colly.NewCollector(
-		colly.CacheDir("./reg_cache/majorList"),
+		//colly.CacheDir("./reg_cache/allCourseVersion"),
 	)
-	scrapLink.OnResponse(func(r *colly.Response) {
 
-	})
-	scrapLink.OnRequest(func(r *colly.Request) {
-		r.ResponseCharacterEncoding = "charset=UTF-8"
 
-	})
 	var courseVersionList = []courseModel.CourseVersion{}
 
 	scrapLink.OnHTML("body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > font:nth-child(6) > font:nth-child(1) > font:nth-child(1) > font:nth-child(1) > table:nth-child(2) > tbody:nth-child(1)", func(el *colly.HTMLElement) {
@@ -103,6 +98,9 @@ func FindCourseAll(w http.ResponseWriter, r *http.Request) {
 				})
 			}
 		})
+	})
+	scrapLink.OnRequest(func(r *colly.Request) {
+		r.ResponseCharacterEncoding = "charset=UTF-8"
 	})
 	scrapLink.Request("POST",
 		"http://reg5.sut.ac.th/registrar/class_info_1.asp?avs782309057=22&backto=home",
@@ -163,7 +161,6 @@ func digCourseCode(ID string, Year string, sem string) string {
 	scrapLink.OnHTML("a[href]", func(el *colly.HTMLElement) {
 
 		link = el.Attr("href")
-		fmt.Println(link)
 		if strings.Contains(link, "courseid") {
 			tim = subCourse(link)
 		}
@@ -180,14 +177,11 @@ func subCourse(inputStr string) string {
 	var out string
 	tim := strings.Split(inputStr, "&")
 	for _, mam := range tim {
-		//fmt.Println(mam)
 		if strings.Contains(mam, "courseid") { // see
 			out = strings.Split(mam, "=")[1] // get number
-			//fmt.Println("see out is :", out)
 			break
 		}
 	}
-	//fmt.Println("course id", out)
 	return out
 }
 
@@ -201,7 +195,6 @@ func splitCourseName(text string) (string, string) {
 	thaiIndex := 0
 	for i, r := range text {
 		if r > 3500 {
-			//fmt.Println(i, r, string(r))
 			thaiIndex = i
 			break
 		}
@@ -210,7 +203,6 @@ func splitCourseName(text string) (string, string) {
 	if text[0] == 194 { // remove double space
 		firstIndex = 2
 	}
-	//fmt.Println("errr------------>",text,firstIndex,thaiIndex-2)
 	nameEn := text[firstIndex : thaiIndex-2] // remove double space
 	nameTh := text[thaiIndex:len(text)]
 	return nameEn, nameTh
@@ -293,24 +285,19 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 	getParam := mux.Vars(r)
 	id := getParam["id"]
 	//mainLink := "test"
-	scrapLink := colly.NewCollector(
-		colly.CacheDir("./reg_cache/majorList"),
-	)
-	scrapLink.OnResponse(func(r *colly.Response) {
 
-	})
-	scrapLink.OnRequest(func(r *colly.Request) {
-		r.ResponseCharacterEncoding = "charset=UTF-8"
 
-	})
 	var majorList = []courseModel.MajorModel{}
 	var major = courseModel.MajorModel{}
 	requestParams := "facultyid=" + id + "&f_cmd="
 	if id != "10000" {
 		requestParams = requestParams + "&Levelid=1&f_cmd=&Acadyear=-1"
 	}
-
 	getCredit := false
+	scrapLink := colly.NewCollector(
+		//colly.CacheDir("./reg_cache/majorList"),
+	)
+	scrapLink.SetRequestTimeout(5 * time.Second)
 	scrapLink.OnHTML("body > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > table:nth-child(6) > tbody:nth-child(1)", func(el *colly.HTMLElement) {
 		el.ForEach("tr", func(_ int, elTr *colly.HTMLElement) {
 			elTr.ForEach("td", func(_ int, elTr2 *colly.HTMLElement) {
@@ -322,7 +309,6 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 					major.Course = elTr2.Text[0 : len(elTr2.Text)-1]
 				} else if elTr2.Attr("valign") == "TOP" && elTr2.Attr("bgcolor") == "#FFFFDE" && elTr2.Attr("align") == "CENTER" && getCredit == true {
 					getCredit = false
-
 					credit, err := strconv.Atoi(elTr2.Text)
 					if err != nil {
 						log.Fatal("program id is err")
@@ -333,6 +319,9 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 				}
 			})
 		})
+	})
+	scrapLink.OnRequest(func(r *colly.Request) {
+		r.ResponseCharacterEncoding = "charset=UTF-8"
 	})
 	scrapLink.Request("POST",
 		"http://reg4.sut.ac.th/registrar/program_info.asp",
@@ -364,7 +353,6 @@ func CourseMajor(w http.ResponseWriter, r *http.Request) {
 					elFont.ForEach("td", func(_ int, elFontEl *colly.HTMLElement) {
 
 						if elFontEl.Attr("valign") == "TOP" && state == "courseId" {
-							log.Println("[courseOfMajor] CourseId :", elFontEl.ChildText("font"))
 							tempText := strings.Split(elFontEl.ChildText("font"), " ")
 							tempCourseIn, err := strconv.Atoi(tempText[0])
 							if err != nil {
@@ -372,14 +360,12 @@ func CourseMajor(w http.ResponseWriter, r *http.Request) {
 							}
 							courseTemp.CourseId = tempCourseIn
 						} else if elFontEl.Attr("valign") == "TOP" && state == "credit" {
-							log.Println("[courseOfMajor] Credit :", elFontEl.ChildText("font"))
 							courseTemp.Credit = elFontEl.ChildText("font")
 							majorCourseList = append(majorCourseList, courseTemp)
 							courseTemp = courseModel.MajorCourse{}
 							state = "courseId"
 						} else if elFontEl.Attr("valign") == "CENTER" {
 							nameEn, nameTh := splitCourseName(elFontEl.ChildText("font"))
-							log.Println("[courseOfMajor] Course name:", nameEn, nameTh)
 							courseTemp.CourseNameEn = nameEn
 							courseTemp.CourseNameTh = nameTh
 							state = "credit"
@@ -410,25 +396,12 @@ func getDateFormCourse(text string) {
 		textTemp := text
 		patternLen := len(dateTimeStr)
 		for i := 0; i >= 0; i++ {
-			position := strings.Index(textTemp, dateTimeStr) // หา index ของ word match
 			if len(textTemp) <= patternLen {
 				break
 			}
-			textScope := text[0:patternLen] // 0, length
-
-			fmt.Println("text scope->", textScope)
-
 			textOriLen := len(textTemp)
-			fmt.Println("text org->", textTemp)
 			textTemp = textTemp[patternLen+1 : textOriLen]
-			position = strings.Index(textTemp, dateTimeStr)
-			Building := textTemp[0:position]
-			fmt.Println("new text->", Building)
-
-			fmt.Println("new position:", position)
-			fmt.Println("xxxxxx--", textTemp[0:position])
 		}
-		fmt.Printf("=============================================")
 	}
 	//fmt.Println(text)
 }
@@ -517,9 +490,6 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 			}
 			if el.Attr("align") == "left" { // line hr in html tag
 				// push group hear
-				fmt.Println("====================== ,", gTemp)
-				fmt.Printf("%+v\n", sectionTimeTemp)
-				//fmt.Println(tempDetail)
 				Group = append(Group, courseModel.Group{
 					SecTime:   sectionTimeTemp,
 					Group:     gTemp,

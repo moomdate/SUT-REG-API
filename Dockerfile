@@ -1,7 +1,7 @@
 FROM golang:1.13-alpine3.10 AS build-env
 
-ARG app_env
-ENV APP_ENV $app_env
+ARG build_type
+ENV BUILD_TYPE $build_type
 
 RUN mkdir -p /src/moomdate/reg-api
 WORKDIR /src/moomdate/reg-api
@@ -9,18 +9,13 @@ COPY . .
 RUN go get ./
 
 
-#RUN go build /go/src/github.com/moomdate/reg-api/main.go
-# RUN go get github.com/gocolly/colly
-# RUN go get github.com/gorilla/mux
-# RUN go get github.com/rs/cors
-
 RUN go build .
 
-CMD if [ ${APP_ENV} = production ]; \
+CMD if [ ${BUILD_TYPE} = prod ]; \
     then \
     ./reg-api; \
     else \
-    go run main.go \
+    go run main.go; \
     fresh; \
     fi 
 

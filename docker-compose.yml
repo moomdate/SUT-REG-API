@@ -1,25 +1,15 @@
 version: '3.7'
 services:
   api:
-    #image: reg-api:latest
     container_name: reg-api
     volumes:
       - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
       - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
       - ./reg_cache/majorCourse:/src/moomdate/reg-api/reg_cache/majorCourse
       - ./reg_cache/majorList:/src/moomdate/reg-api/reg_cache/majorList
-    build:
-      context: .
-      args:
-        app_env: production
-    #network_mode: 'bridge'
-    image: reg-api
+    image: https://github.com/moomdate/SUT-REG-API:1.0.0
 
-    networks:
-      static-network:
-        ipv4_address: 172.20.128.3
 networks:
-  static-network:
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+  default:
+    external:
+      name: api-nw
