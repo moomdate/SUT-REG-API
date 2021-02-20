@@ -2,14 +2,12 @@ version: '3.7'
 services:
   api:
     container_name: reg-api
+    image: docker.pkg.github.com/moomdate/sut-reg-api/reg-api:1.0.0
     volumes:
       - ./reg_cache/course:/src/moomdate/reg-api/reg_cache/course
       - ./reg_cache/digCode:/src/moomdate/reg-api/reg_cache/digCode
       - ./reg_cache/majorCourse:/src/moomdate/reg-api/reg_cache/majorCourse
       - ./reg_cache/majorList:/src/moomdate/reg-api/reg_cache/majorList
-    image: https://github.com/moomdate/SUT-REG-API:1.0.0
+    ports:
+      - "8081:8081"
 
-networks:
-  default:
-    external:
-      name: api-nw
