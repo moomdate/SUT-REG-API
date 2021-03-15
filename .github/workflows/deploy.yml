@@ -39,7 +39,6 @@ jobs:
             if [ -d "sut-reg-api" ]; then rm -Rf sut-reg-api; fi
             git clone https://$DEPLOY_TOKEN@github.com/moomdate/sut-reg-api.git
             echo $SUDO_PASSWORD | sudo -S cp sut-reg-api/docker-compose.override.yml docker-compose.override.yml
-            echo $SUDO_PASSWORD | sudo -S cp sut-reg-api/src/main/resources/application-prod.yml config/application-prod.yml
             if [ -d "sut-reg-api" ]; then rm -Rf sut-reg-api; fi
             sed -i "s/#VERSION/$IMAGE_VERSION/g" docker-compose.override.yml
             echo $SUDO_PASSWORD | sudo -S docker-compose build --pull && sudo -S docker-compose up -d
