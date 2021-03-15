@@ -35,7 +35,7 @@ jobs:
             echo "Web Image Version: $IMAGE_VERSION"
             cd /home/home/webuser/reg-api
             echo $SUDO_PASSWORD | sudo -S docker-compose down
-            docker images | grep sut-reg-api/reg-api | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f docker.pkg.github.com/moomdate/sut-reg-api-api/reg-api:{}
+            docker images | grep sut-reg-api/reg-api | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f docker.pkg.github.com/moomdate/sut-reg-api/reg-api:{}
             if [ -d "sut-reg-api" ]; then rm -Rf sut-reg-api; fi
             git clone https://$DEPLOY_TOKEN@github.com/moomdate/sut-reg-api.git
             echo $SUDO_PASSWORD | sudo -S cp sut-reg-api/docker-compose.override.yml docker-compose.override.yml
