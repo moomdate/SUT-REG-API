@@ -36,7 +36,7 @@ const ( //child access
 	getReserveAmount = "td:nth-child(10)"
 	getRemainAmount  = "td:nth-child(11)"
 )
-const baseURLCourseInMajor = "http://reg4.sut.ac.th/registrar/program_info_1.asp?programid="
+const baseURLCourseInMajor = "http://reg5.sut.ac.th/registrar/program_info_1.asp?programid="
 
 func ClearCache(w http.ResponseWriter, r *http.Request) {
 	getParam := mux.Vars(r)
@@ -153,7 +153,7 @@ func digCourseCode(ID string, Year string, sem string) string {
 	if len(ID) < 1 {
 		return ""
 	}
-	mainLink := "http://reg3.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
+	mainLink := "http://reg5.sut.ac.th/registrar/class_info_1.asp?coursestatus=O00&facultyid=all&maxrow=1&acadyear=" + Year + "&semester=" + sem + "&coursecode=" + ID
 	scrapLink := colly.NewCollector(
 		colly.CacheDir("./reg_cache/digCode"),
 	)
@@ -324,7 +324,7 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 		r.ResponseCharacterEncoding = "charset=UTF-8"
 	})
 	scrapLink.Request("POST",
-		"http://reg4.sut.ac.th/registrar/program_info.asp",
+		"http://reg5.sut.ac.th/registrar/program_info.asp",
 		strings.NewReader(requestParams),
 		nil,
 		http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}})
@@ -433,7 +433,7 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 		newPId = pID
 	}
 
-	baseURL := fmt.Sprintf("http://reg3.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", newPId, pYear, pSemis)
+	baseURL := fmt.Sprintf("http://reg5.sut.ac.th/registrar/class_info_2.asp?backto=home&option=0&courseid=%s&acadyear=%s&semester=%s", newPId, pYear, pSemis)
 	log.Println("request URL: ", baseURL)
 
 	c := colly.NewCollector(
