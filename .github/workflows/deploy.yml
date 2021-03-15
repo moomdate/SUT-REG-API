@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: Deploy on type (prod or test)
+        default: test
+        required: true
+      image-version:
+        description: images version
+        default: 1.0.0
+        required: true
+jobs:
+  steps-deploy:
+    name: Step deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Login ssh
+        uses: appleboy/ssh-action@master
+        env:
+          GH_PASSWORD: ${{secrets.GH_PASSWORD}}
+          DEPLOY_TOKEN: ${{secrets.DEPLOY_TOKEN}}
+          SUDO_PASSWORD: ${{secrets.SSH_PROD_PASSWORD}}
+          BUILD_TPYE: ${{ github.event.inputs.build-type }}
+          IMAGE_VERSION: ${{ github.event.inputs.image-version }}
+        with:
+          host: ${{ secrets.SSH_PROD_HOST }}
+          username: ${{ secrets.SSH_PROD_USERNAME }}
+          password: ${{ secrets.SSH_PROD_PASSWORD }}
+          envs: SUDO_PASSWORD,BUILD_TPYE,IMAGE_VERSION,GH_PASSWORD,DEPLOY_TOKEN
+          script_stop: true
+          script: |
+            echo "Web Image Version: $IMAGE_VERSION"
+            cd /home/home/webuser/reg-api
+            echo $SUDO_PASSWORD | sudo -S docker-compose down
+            docker images | grep sut-reg-api/reg-api | tr -s ' ' | cut -d ' ' -f 2 | xargs -I {} docker rmi -f docker.pkg.github.com/moomdate/sut-reg-api-api/reg-api:{}
+            if [ -d "sut-reg-api" ]; then rm -Rf sut-reg-api; fi
+            git clone https://$DEPLOY_TOKEN@github.com/moomdate/sut-reg-api.git
+            echo $SUDO_PASSWORD | sudo -S cp scheduler-api/docker-compose.override.yml docker-compose.override.yml
+            echo $SUDO_PASSWORD | sudo -S cp scheduler-api/src/main/resources/application-prod.yml config/application-prod.yml
+            if [ -d "sut-reg-api" ]; then rm -Rf sut-reg-api; fi
+            sed -i "s/#VERSION/$IMAGE_VERSION/g" docker-compose.override.yml
+            echo $SUDO_PASSWORD | sudo -S docker-compose build --pull && sudo -S docker-compose up -d
