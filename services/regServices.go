@@ -80,7 +80,6 @@ func FindCourseAll(w http.ResponseWriter, r *http.Request) {
 		//colly.CacheDir("./reg_cache/allCourseVersion"),
 	)
 
-
 	var courseVersionList = []courseModel.CourseVersion{}
 
 	scrapLink.OnHTML("body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > font:nth-child(6) > font:nth-child(1) > font:nth-child(1) > font:nth-child(1) > table:nth-child(2) > tbody:nth-child(1)", func(el *colly.HTMLElement) {
@@ -286,7 +285,6 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 	id := getParam["id"]
 	//mainLink := "test"
 
-
 	var majorList = []courseModel.MajorModel{}
 	var major = courseModel.MajorModel{}
 	requestParams := "facultyid=" + id + "&f_cmd="
@@ -323,11 +321,13 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 	scrapLink.OnRequest(func(r *colly.Request) {
 		r.ResponseCharacterEncoding = "charset=UTF-8"
 	})
+
+	header := http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}, "User-Agent": []string{"application/reg1"}}
 	scrapLink.Request("POST",
 		"http://reg5.sut.ac.th/registrar/program_info.asp",
 		strings.NewReader(requestParams),
 		nil,
-		http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}})
+		header)
 
 	w.Header().Set("Content-type", "application/json; charset=UTF-8;")
 	json.NewEncoder(w).Encode(majorList)
@@ -526,8 +526,8 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 			Credit:      credit,
 			Description: description,
 			Groups:      Group,
-			Year: year,
-			Semester: semester,
+			Year:        year,
+			Semester:    semester,
 		}
 	})
 	c.OnRequest(func(r *colly.Request) {
