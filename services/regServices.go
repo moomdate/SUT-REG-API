@@ -44,7 +44,7 @@ func ClearCache(w http.ResponseWriter, r *http.Request) {
 	cacheFolder := ""
 	switch cacheType {
 	case "dig":
-		cacheFolder = "digCOde"
+		cacheFolder = "digCode"
 		break
 	case "major":
 		cacheFolder = "majorCourse"
