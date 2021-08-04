@@ -1,16 +1,19 @@
 package courseModel
 
 type CourseStruc struct {
-	NameEn      string  `json:"nameEn"`
-	NameTh      string  `json:"nameTh"`
-	BelongTo    string  `json:"belongTo"`
-	Status      string  `json:"status"`
-	ID          string  `json:"courseID"`
-	Credit      string  `json:"credit"`
-	Description string  `json:"description"`
-	Year        int     `json:"year""`
-	Semester    int     `json:"semester"`
-	Groups      []Group `json:"groups"`
+	NameEn            string   `json:"nameEn"`
+	NameTh            string   `json:"nameTh"`
+	BelongTo          string   `json:"belongTo"`
+	Status            string   `json:"status"`
+	ID                string   `json:"courseID"`
+	Credit            string   `json:"credit"`
+	Description       string   `json:"description"`
+	Year              int      `json:"year"`
+	Semester          int      `json:"semester"`
+	ConditionCourses  []string `json:"conditionCourses"`
+	SequentCourse     []string `json:"sequentCourses"`
+	EquivalentCourses []string `json:"equivalentCourses"`
+	Groups []Group `json:"groups"`
 }
 
 // default is Groups []GroupDetail

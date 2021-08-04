@@ -15,13 +15,20 @@ import (
 )
 
 const ( //child access
-	headerGroups     = "#F5F5F5"
-	acTable          = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
-	getStatus        = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3) > font:nth-child(1)"
-	getCourseNameEn  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
-	getCourseNameTh  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) > font:nth-child(1)"
-	getBelongTo      = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(3) > font:nth-child(1)	"
-	getCredit        = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
+	headerGroups          = "#F5F5F5"
+	acTable               = "body > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3)  "
+	getStatus             = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(5) > td:nth-child(3) > font:nth-child(1)"
+	getCourseNameEn       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > b:nth-child(1) > font:nth-child(1)"
+	getCourseNameTh       = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(2) > td:nth-child(2) > font:nth-child(1)"
+	getBelongTo           = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(3) > font:nth-child(1)	"
+	getCredit             = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(4) > td:nth-child(3) > font:nth-child(1)"
+	getConditionCourses   = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(${number}) > td:nth-child(3) > font:nth-child(1)"
+	getSequentCourses     = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(7) > td:nth-child(3) > font:nth-child(1)"
+	getEquivalentCourses  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(8) > td:nth-child(3) > font:nth-child(1)"
+	checkConditionCourse  = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(${number}) > td:nth-child(2) > font:nth-child(1) > font:nth-child(1)"
+	checkSequentCourse    = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(7) > td:nth-child(2) > font:nth-child(1) > font:nth-child(1)"
+	checkEquivalentCourse = "table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(8) > td:nth-child(2) > font:nth-child(1) > font:nth-child(1)"
+
 	getDay           = "td:nth-child(4)"                     //get Date
 	getTime          = "td:nth-child(5)"                     //get Time
 	getRoom          = "td:nth-child(6) "                    //get room
@@ -76,8 +83,9 @@ func FindCourseAll(w http.ResponseWriter, r *http.Request) {
 	acadyears := getParam["year"]
 	semesters := getParam["semester"]
 	fmt.Print(" =====", cid+" "+acadyears+" - "+semesters)
+	bodyData := strings.NewReader(fmt.Sprintf("coursestatus=O00&facultyid=all&maxrow=50&acadyear=%s&semester=%s&CAMPUSID=&LEVELID=&coursecode=%s&coursename=&cmd=2", acadyears, semesters, cid))
 	scrapLink := colly.NewCollector(
-		//colly.CacheDir("./reg_cache/allCourseVersion"),
+	//colly.CacheDir("./reg_cache/allCourseVersion"),
 	)
 
 	var courseVersionList = []courseModel.CourseVersion{}
@@ -102,8 +110,8 @@ func FindCourseAll(w http.ResponseWriter, r *http.Request) {
 		r.ResponseCharacterEncoding = "charset=UTF-8"
 	})
 	scrapLink.Request("POST",
-		"http://reg5.sut.ac.th/registrar/class_info_1.asp?avs782309057=22&backto=home",
-		strings.NewReader(fmt.Sprintf("coursestatus=O00&facultyid=all&maxrow=50&acadyear=%s&semester=%s&CAMPUSID=&LEVELID=&coursecode=%s&coursename=&cmd=2", acadyears, semesters, cid)),
+		"http://reg3.sut.ac.th/registrar/class_info_1.asp?avs782309057=22&backto=home",
+		bodyData,
 		nil,
 		http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}})
 
@@ -293,7 +301,7 @@ func GetMajor(w http.ResponseWriter, r *http.Request) {
 	}
 	getCredit := false
 	scrapLink := colly.NewCollector(
-		//colly.CacheDir("./reg_cache/majorList"),
+	//colly.CacheDir("./reg_cache/majorList"),
 	)
 	scrapLink.SetRequestTimeout(5 * time.Second)
 	scrapLink.OnHTML("body > table:nth-child(2) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > table:nth-child(6) > tbody:nth-child(1)", func(el *colly.HTMLElement) {
@@ -420,6 +428,10 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 
 	var courseNameEn, courseNameTh, belongTo, status, credit, description string
 	var sectionTimeTemp []courseModel.SectionTime
+	var conditionCourses []string
+	var sequentCourses []string
+	var equivalentCourses []string
+
 	var gTemp int
 	var tempDetail courseModel.Group
 	var amount Amount
@@ -449,6 +461,7 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 		tempCID = cc.ChildText(getCourseId)
 		description = subDescription(cc.ChildText(getDescription))
 
+		conditionCourses, sequentCourses, equivalentCourses = mapSequentCourse(cc)
 		fmt.Println("----------- course name en", courseNameEn)
 		fmt.Println("----------- course name th", courseNameTh)
 		fmt.Println("----------- course name th", description)
@@ -518,16 +531,19 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 		}) //end loop
 
 		Course = courseModel.CourseStruc{
-			NameEn:      courseNameEn,
-			NameTh:      courseNameTh,
-			BelongTo:    belongTo,
-			Status:      status,
-			ID:          tempCID,
-			Credit:      credit,
-			Description: description,
-			Groups:      Group,
-			Year:        year,
-			Semester:    semester,
+			NameEn:            courseNameEn,
+			NameTh:            courseNameTh,
+			BelongTo:          belongTo,
+			Status:            status,
+			ID:                tempCID,
+			Credit:            credit,
+			Description:       description,
+			Groups:            Group,
+			Year:              year,
+			Semester:          semester,
+			ConditionCourses:  conditionCourses,
+			SequentCourse:     sequentCourses,
+			EquivalentCourses: equivalentCourses,
 		}
 	})
 	c.OnRequest(func(r *colly.Request) {
@@ -536,4 +552,39 @@ func ScrapingCourseDetail(w http.ResponseWriter, r *http.Request) {
 	c.Visit(baseURL)
 	w.Header().Set("Content-type", "application/json; charset=UTF-8;")
 	json.NewEncoder(w).Encode(Course)
+}
+
+func mapSequentCourse(cc *colly.HTMLElement) ([]string, []string, []string) {
+	var conditionCourses, sequentCourses, equivalentCourses []string
+	for i := 0; i < 3; i++ {
+		str := strings.ReplaceAll(checkConditionCourse, "${number}", strconv.Itoa(i+6))
+		str2 := strings.ReplaceAll(getConditionCourses, "${number}", strconv.Itoa(i+6))
+		if strings.Contains(cc.ChildText(str), "เงื่อนไขรายวิชา") {
+			conditionCourses = scriptingSequentCourses(cc, str2)
+		}
+		if strings.Contains(cc.ChildText(str), "รายวิชาต่อเนื่อง") {
+			sequentCourses = scriptingSequentCourses(cc, str2)
+		}
+		if strings.Contains(cc.ChildText(str), "รายวิชาเทียบเท่า") {
+			equivalentCourses = scriptingSequentCourses(cc, str2)
+		}
+	}
+	return conditionCourses, sequentCourses, equivalentCourses
+}
+
+func scriptingSequentCourses(cc *colly.HTMLElement, textSelector string) []string {
+	if cc.ChildText(textSelector) == "" {
+		fmt.Println("str is null")
+		return []string{}
+	}
+	var arr []string
+	if strings.Contains(cc.ChildText(textSelector), "หรือ") {
+		arr = strings.Split(cc.ChildText(textSelector), "หรือ")
+	} else {
+		arr = strings.Split(cc.ChildText(textSelector), ",")
+	}
+	for i := range arr {
+		arr[i] = strings.TrimSpace(arr[i])
+	}
+	return arr
 }
